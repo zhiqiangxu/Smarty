@@ -1,0 +1,248 @@
+{
+  use strict;
+  use warnings;
+
+  sub unexpand {
+    if(@_ == 1 and ref($_[0]) eq 'ARRAY'){
+      return $_[0];
+    }
+
+    my $right = pop;
+    my $op = pop;
+    [ 'op', $op, unexpand(@_), $right ];
+  }
+}
+
+spec:
+	template eof
+	{ $item[1] }
+
+eof: /^\Z/
+
+template:
+	template_element(s?)
+	{ $item[1] }
+
+template_element:
+	<skip:''> literal
+	{ ['literal', $item[2]] }
+	| 
+	code
+	{ ['code', $item[1]] }
+
+literal:
+	/[^{]+/
+	
+code:
+	if
+	{ $item[1] }
+	|
+	else
+	{ $item[1] }
+	|
+	elsif
+	{ $item[1] }
+	|
+	if_end
+	{ $item[1] }
+	|
+	for_start
+	{ $item[1] }
+	|
+	'{' exp '}'
+	{ $item[2] }
+	|
+	for_else
+	{ $item[1] }
+	|
+	for_end
+	{ $item[1] }
+
+if:
+	'{if' exp '}'
+	{ ['if', $item[2]] }
+
+else:
+	'{else}' 
+	{ ['else'] }
+
+elsif:
+	'{elsif' exp '}'
+	{ ['elsif', $item[2]] }
+
+if_end:
+	'{/if}'
+	{ ['if_end'] }
+
+for_start:
+	'{for' loop_attribute(s) '}'
+	{ ['for_start', $item[2]] }
+
+for_else:
+	'{for_else}'
+	{ ['for_else'] }
+
+for_end:
+	'{/for}'
+	{ ['for_end'] }
+
+loop_attribute:
+	NAME '=' exp
+	{ ['loop_attribute', $item[1], $item[3]] }
+
+exp:
+	or_sym_exp
+	{ $item[1] }
+
+or_sym_exp:
+	<leftop: and_sym_exp OR_SYM  and_sym_exp >
+	{ unexpand(@{$item[1]}); }
+
+and_sym_exp:
+	<leftop: not_sym_exp AND_SYM  not_sym_exp >
+	{ unexpand(@{$item[1]}); }
+
+not_sym_exp:
+	NOT_SYM or_exp
+	{ [ 'op', $item[1], $item[2] ] }
+	|
+	or_exp
+	{ $item[1] }
+
+or_exp:		
+	<leftop: and_exp OR and_exp >
+	{ unexpand(@{$item[1]}); }
+
+and_exp:		
+	<leftop: comp_exp AND comp_exp >
+	{ unexpand(@{$item[1]}); }
+
+comp_exp:		
+	<leftop: sum_exp COMP sum_exp >
+	{ unexpand(@{$item[1]}); }
+
+sum_exp:
+	<leftop: prod_exp SUM prod_exp >
+	{ unexpand(@{$item[1]}); }
+
+prod_exp:
+	<leftop: match_exp PROD match_exp >
+	{ unexpand(@{$item[1]}); }
+
+match_exp:
+	not_exp MATCH REGEXP
+	{ [ 'op', $item[2], $item[1], $item[3] ] }
+	| 
+	not_exp
+	{ $item[1] }
+
+not_exp:
+	(NOT|NOT_SYM) term
+	{ [ 'op', $item[1], $item[2] ] }
+	| 
+	term
+	{ $item[1] }
+
+term:
+	function_exp
+	{ ['term', $item[1]] }
+	| 
+	'(' exp ')'
+	{ $item[2] }
+	| 
+	NUMBER
+	{ ['term', $item[1]] }
+	| 
+	STRING
+	{ ['term', $item[1]] }
+	|
+	'@' NAME
+	{ ['term', [$item[1], $item[2]]] }
+	|
+	'%' NAME
+	{ ['term', [$item[1], $item[2]]] }
+	| 
+	'$' NAME (subscripted)(s?)
+	{ ['term', [$item[1], $item[2], $item[3]]] }
+	|
+	'@' '{' term '}'
+	{ ['term', ['@{', $item[3]]] }
+	|
+	'%' '{' term '}'
+	{ ['term', ['%{', $item[3]]] }
+
+
+function_exp:
+	NAME '(' exp(s? /,/) ')'
+	{ ['function_exp', $item[1], $item[3]] }
+
+subscripted:
+	'[' exp ']'
+	{ ['subscripted', '[', $item[2]] }
+	|
+	'->' '[' exp ']'
+	{ ['subscripted', '->[', $item[3]] }
+	|
+	'{' exp '}'
+	{ ['subscripted', '{', $item[2]] }
+	|
+	'->' '(' exp(s? /,/) ')'
+	{ ['subscripted', '->(', $item[3]] }
+
+
+NAME:		
+	/[_a-z][_a-z0-9]*/i
+
+
+STRING: 
+	"'" <commit> /(?:[^']|\\.)*/ "'"
+	{ ['constant', eval "'$item[3]'"] }
+	| 
+	'"' <commit> /(?:[^"]|\\.)*/ '"'
+	{ ['constant', eval qq{"$item[3]"}] }
+
+NUMBER: 
+	REAL
+	{ ['constant', eval $item[1]] }
+	| 
+	INT
+	{ ['constant', eval $item[1]] }
+
+REAL: 
+	/-?\d+\.\d+\b/
+
+INT: 
+	/-?\d+\b/
+
+REGEXP:		
+	m!/[^/]*/i?!
+
+NOT:		
+	'!'
+
+MATCH:		
+	'=~'
+
+PROD:		
+	'*' | '/' | '%'
+
+SUM:		
+	'+' | '-'
+
+COMP:		
+	/>=?|<=?|!=|==|le|ge|eq|ne|lt|gt/
+
+AND:		
+	'&&'
+
+OR:			
+	'||'
+
+NOT_SYM:	
+	'not'
+
+AND_SYM:	
+	'and'
+
+OR_SYM:		
+	'or'
