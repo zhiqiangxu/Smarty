@@ -101,7 +101,7 @@ sub blend_for_consequent {
 		$type = $item->[0];
 		if($type eq 'code'){
 			$type = $item->[1][0];
-			if($type eq 'for'){
+			if($type eq 'for_start'){
 				$item = shift @$parse_tree;
 				$item = blend_for($item, $parse_tree);
 			}

@@ -2,9 +2,15 @@
 {if 0}abc{else}def{/if}
 {if 0 or 1}{123}{/if}
 {if @loop}html{$loop[-1]}{/if}>
-{for from=@loop key=$k value=$v}
-{$k}{$v}
-{/for}
 {for from=%loop2 key=$k value=$v}
 {$k}--{$v}
 {/for}
+{for from=%loop2 key=$k1 value=$v1}
+{for from=@loop key=$k2 value=$v2}
+{$k1}-{$k2}-{$v1}-{$v2}
+{/for}
+{/for}
+{for from=@loop key=$k value=$v}
+{$k}{$v}
+{/for}
+
