@@ -244,14 +244,14 @@ sub eval_for_loop {
 		if(ref $from eq 'ARRAY'){
 			my $i = 0;
 			for my $row (@$from_value){
-				my $new_att = $att->push($k ? ($k => $i) : (), $v ? ($v => $row) : ());
+				my $new_att = $att->push(defined $k ? ($k => $i) : (), defined $v ? ($v => $row) : ());
 				map {Eval($_, $new_att)} @$consequent;
 				$i++;
 			}
 		}
 		elsif(ref $from_value eq 'HASH'){
 			while(my ($kh, $vh) = each(%$from_value)){
-				my $new_att = $att->push($k ? ($k => $kh) : (), $v ? ($v => $vh) : ());
+				my $new_att = $att->push(defined $k ? ($k => $kh) : (), defined $v ? ($v => $vh) : ());
 				map {Eval($_, $new_att)} @$consequent;
 			}
 		}

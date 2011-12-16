@@ -3,5 +3,5 @@
 {if 0 or 1}{123}{/if}
 {if @loop}html{$loop[-1]}{/if}>
 {for from=@loop key=$k value=$v}
-1
+{$k}{$v}
 {/for}

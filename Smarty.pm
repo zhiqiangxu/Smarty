@@ -51,13 +51,13 @@ sub get {
 	my ($self, $name) = @_;
 	my $type = substr($name, 0, 1);
 	if($type eq '$'){
-		return $self->{$name} || ($self->{__parent__} and $self->{__parent__}->get($name));
+		return exists $self->{$name} ? $self->{$name} : ($self->{__parent__} and $self->{__parent__}->get($name));
 	}
 	elsif($type eq '@'){
-		return $self->{$name} ? @{$self->{$name}} : ($self->{__parent__} ? () : $self->{__parent__}->get($name));
+		return exists $self->{$name} ? @{$self->{$name}} : ($self->{__parent__} ? () : $self->{__parent__}->get($name));
 	}
 	elsif($type eq '%'){
-		return $self->{$name} ? %{$self->{$name}} : ($self->{__parent__} ? () : $self->{__parent__}->get($name));
+		return exists $self->{$name} ? %{$self->{$name}} : ($self->{__parent__} ? () : $self->{__parent__}->get($name));
 	}
 }
 
