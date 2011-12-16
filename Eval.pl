@@ -241,7 +241,7 @@ sub eval_for_loop {
 	my ($from, $k, $v, $att, $consequent, $alternative) = @_;
 	my $from_value = eval_exp($from, $att, 1);
 	if($from_value){
-		if(ref $from eq 'ARRAY'){
+		if(ref $from_value eq 'ARRAY'){
 			my $i = 0;
 			for my $row (@$from_value){
 				my $new_att = $att->push(defined $k ? ($k => $i) : (), defined $v ? ($v => $row) : ());
@@ -287,13 +287,11 @@ sub eval_term {
 		return $term->[1];
 	}
 	elsif($type eq '@'){
-		unless($scalar){
-			return $att->get('@' . $term->[1]);
-		}
-		else{
-			return [$att->get('@' . $term->[1])];
-		}
+		return $att->get('@' . $term->[1], $scalar);
 	}
+    elsif($type eq '%'){
+        return $att->get('%' . $term->[1], $scalar);
+    }
 	elsif($type eq '$'){
 		if($term->[2] and @{$term->[2]}){
 			my $type;
