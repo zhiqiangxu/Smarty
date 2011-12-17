@@ -132,7 +132,11 @@ sub blend_if_alternative {
 		$type = $item->[0];
 		if($type eq 'code'){
 			$type = $item->[1][0];
-			if($type eq 'else'){
+			if($type eq 'if'){
+				$item = shift @$parse_tree;
+				$item = blend_if($item, $parse_tree);
+			}
+			elsif($type eq 'else'){
 				shift @$parse_tree;
 				next;
 			}
@@ -167,7 +171,11 @@ sub blend_for_alternative {
 		$type = $item->[0];
 		if($type eq 'code'){
 			$type = $item->[1][0];
-			if($type eq 'for_else'){
+			if($type eq 'for_start'){
+				$item = shift @$parse_tree;
+				$item = blend_for($item, $parse_tree);
+			}
+			elsif($type eq 'for_else'){
 				shift @$parse_tree;
 				next;
 			}
