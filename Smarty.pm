@@ -2,7 +2,8 @@ package Smarty;
 use strict;
 use warnings;
 use Parse::RecDescent;
-require "Eval.pl";
+use Eval;
+use Ast;
 
 sub new {
 	my ($class, $tmpl) = @_;
@@ -10,7 +11,7 @@ sub new {
 	my $parser = new Parse::RecDescent ($grammar);
 	my $text = _file_get_contents($tmpl);
 	my $parse_tree = $parser->spec($text) or print "Bad text!\n";
-	my $self = {parse_tree => Eval::Blend($parse_tree), param => Smarty::Param->new};
+	my $self = {parse_tree => Ast::Blend($parse_tree), param => Smarty::Param->new};
 	bless $self, $class;
 	return $self;
 }
