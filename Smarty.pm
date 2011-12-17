@@ -22,9 +22,9 @@ sub new {
 	my ($class, %v) = @_;
 	my $self = {};
 	bless $self, $class;
-    if(exists $v{__parent__}){
-        $self->{__parent__} = delete $v{__parent__};
-    }
+	if(exists $v{__parent__}){
+		$self->{__parent__} = delete $v{__parent__};
+	}
 	while(my ($k, $v) = each(%v)){
 		$self->set($k, ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? %$v : $v);
 	}
