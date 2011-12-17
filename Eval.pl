@@ -265,7 +265,7 @@ sub eval_for {
 	my ($parse_tree, $att) = @_;
 	my (undef, $loop_attributes, $consequent, $alternative) = @{$parse_tree};
 	my ($from, $k, $v) = expand_att($loop_attributes);
-	eval_for_loop($from, $k, $v, , $att, $consequent, $alternative);
+	eval_for_loop($from, $k, $v, $att, $consequent, $alternative);
 }
 
 sub eval_exp {

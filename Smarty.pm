@@ -57,10 +57,10 @@ sub get {
 		return exists $self->{$name} ? $self->{$name} : ($self->{__parent__} and $self->{__parent__}->get($name));
 	}
 	elsif($type eq '@'){
-		return exists $self->{$name} ? ($scalar ? $self->{$name} : @{$self->{$name}}) : ($self->{__parent__} ? () : $self->{__parent__}->get($name, $scalar));
+		return exists $self->{$name} ? ($scalar ? $self->{$name} : @{$self->{$name}}) : ($self->{__parent__} ? $self->{__parent__}->get($name, $scalar) : ());
 	}
 	elsif($type eq '%'){
-		return exists $self->{$name} ? ($scalar ? $self->{$name} : %{$self->{$name}}) : ($self->{__parent__} ? () : $self->{__parent__}->get($name, $scalar));
+		return exists $self->{$name} ? ($scalar ? $self->{$name} : %{$self->{$name}}) : ($self->{__parent__} ? $self->{__parent__}->get($name, $scalar) : ());
 	}
 }
 
